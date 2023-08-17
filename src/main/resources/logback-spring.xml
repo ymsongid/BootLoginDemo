@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds">
+
+	<property name="LOG_PATH" value="d:/temp"/>
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<withJansi>true</withJansi>
+		<encoder>
+			<pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %green(%-5level) %logger{35} %cyan(%logger{15}) - %msg %n</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>${LOG_PATH}/logs/daily.log</file>
+		<encoder>
+			<pattern>[%d{yyyy-MM-dd HH:mm:ss}:%-3relative][%thread] %-5level %logger{35} - %msg%n</pattern>
+		</encoder>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_PATH}/logs/all.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+			<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+				<maxFileSize>100MB</maxFileSize>
+			</timeBasedFileNamingAndTriggeringPolicy>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+	</appender>
+
+	<springProfile name="local">
+	    <Logger name="com.proj" level="debug" additivity="false">
+	        <Appender-Ref ref="console"/>
+	    </Logger>
+        <Logger name="java.sql" level="debug" additivity="false">
+            <Appender-Ref ref="console" />
+        </Logger>
+        <Logger name="jdbc.sqltiming" level="debug" additivity="false">
+            <Appender-Ref ref="console" />
+        </Logger>
+        <Logger name="org.springframework" level="warn" additivity="false">
+            <Appender-Ref ref="console" />
+        </Logger>
+	</springProfile>
+
+	<springProfile name="dev | prod">
+	    <Logger name="com.proj" level="debug" additivity="false">
+	        <Appender-Ref ref="file"/>
+	    </Logger>
+        <Logger name="java.sql" level="debug" additivity="false">
+            <Appender-Ref ref="file" />
+        </Logger>
+        <Logger name="jdbc.sqltiming" level="debug" additivity="false">
+            <Appender-Ref ref="file" />
+        </Logger>
+        <Logger name="org.springframework" level="debug" additivity="false">
+            <Appender-Ref ref="file" />
+        </Logger>
+	</springProfile>
+
+	<root level="ERROR">
+		<Appender-Ref ref="console" />
+		<Appender-Ref ref="file" />
+	</root>
+</configuration>
