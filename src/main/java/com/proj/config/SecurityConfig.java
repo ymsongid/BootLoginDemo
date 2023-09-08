@@ -6,6 +6,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,6 +25,9 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+	@Autowired
+	private PrincipalOauth2UserService principalOauth2UserService;
+
 	@Bean
 	public static PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -35,23 +39,30 @@ public class SecurityConfig {
 			.authorizeRequests()
 			.anyRequest().authenticated()
 			.and()
-			.formLogin()
-			.loginPage("/login")
-			.loginProcessingUrl("/login")
-			.defaultSuccessUrl("/")
-			.permitAll()
-			.successHandler(new AuthenticationSuccessHandler() {
-			     
-			    @Override
-			    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-			            Authentication authentication) throws IOException, ServletException {
-			         
-			        System.out.println("Logged user: " + authentication.getName());
-			         
-			        response.sendRedirect("/");
-			    }
+			.formLogin(form -> {
+				form
+				.loginPage("/login")
+				.loginProcessingUrl("/login")
+				.defaultSuccessUrl("/")
+				.permitAll()
+				.successHandler(new AuthenticationSuccessHandler() {
+				     
+				    @Override
+				    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+				            Authentication authentication) throws IOException, ServletException {
+				         
+				        System.out.println("Logged user: " + authentication.getName());
+				         
+				        response.sendRedirect("/");
+				    }
+				});
 			})
-			.and()
+			.oauth2Login(form -> {
+				form
+				.loginPage("/login")
+		        .userInfoEndpoint()
+			    .userService(principalOauth2UserService);
+			})
 			.logout()
 			.logoutSuccessUrl("/login")
 			.logoutSuccessHandler(new LogoutSuccessHandler() {
@@ -61,8 +72,8 @@ public class SecurityConfig {
 			                        System.out.println("User logged out: " + authentication.getName());
 			                        response.sendRedirect("/login");
 			                    }
-			                });
-		;
+			                })
+			;
 		return http.build();
 	}
 

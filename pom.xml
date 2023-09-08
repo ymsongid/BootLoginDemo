@@ -122,6 +122,12 @@
             <version>0.2.7</version>
         </dependency>
 
+		<!-- OIDC -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-oauth2-client</artifactId>
+		</dependency>
+
 	</dependencies>
 
 	<build>
